@@ -9,11 +9,12 @@ extern "C"
 
 
 #include "Status.h"
+#include "PacketQueue.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
-NetModule::NetModule(const char * fileName, Status* statusPtr)
-	: _fileName(fileName), _sockfd(0), _statusPtr(statusPtr)
+NetModule::NetModule(const char * fileName, Status* statusPtr, PacketQueue* packetQueuePtr)
+	: _fileName(fileName), _sockfd(0), _statusPtr(statusPtr), _packetQueuePtr(packetQueuePtr)
 {
 	WSADATA wsa_data;
 	WSAStartup(MAKEWORD(2, 2), &wsa_data);
@@ -175,22 +176,6 @@ bool NetModule::receiveAVPacket()
 		return false;
 	}
 
-	/*
-	AVPacket* packet = av_packet_alloc();
-	packet->stream_index = readBuffer.readUInt8();
-	packet->pos = readBuffer.readInt64();
-	packet->pts = readBuffer.readInt64();
-	packet->dts = readBuffer.readInt64();
-	packet->duration = readBuffer.readInt64();
-	packet->size = readBuffer.readInt32();
-
-
-	av_log(nullptr, AV_LOG_INFO, "\n~~~~~~~~~~~~~~~~~~~~~\n");
-	av_log(nullptr, AV_LOG_INFO, "packetSequenceNumber: %d\n", packetSequenceNumber);
-	av_log(nullptr, AV_LOG_INFO, "_maxFinishedPacketNumber: %d\n", _maxFinishedPacketNumber);
-	av_log(nullptr, AV_LOG_INFO, "packet size: %d\n", packet->size);
-	av_log(nullptr, AV_LOG_INFO, "~~~~~~~~~~~~~~~~~~~~~\n");
-	*/
 
 	consturctPacketAndPutOnQueue(bufferMap);
 
@@ -266,5 +251,6 @@ void NetModule::consturctPacketAndPutOnQueue(std::map<uint16_t, ReadBuffer>& buf
 	av_log(nullptr, AV_LOG_INFO, "packet size: %d\n", packet->size);
 	av_log(nullptr, AV_LOG_INFO, "~~~~~~~~~~~~~~~~~~~~~\n");
 
-	// TODO: 放到queue
+	// 放入queue
+	_packetQueuePtr->put(packet);
 }

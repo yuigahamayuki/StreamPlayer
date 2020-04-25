@@ -145,6 +145,7 @@
     <ClCompile Include="..\src\Decoder.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\NetModule.cpp" />
+    <ClCompile Include="..\src\PacketQueue.cpp" />
     <ClCompile Include="..\src\ReadBuffer.cpp" />
     <ClCompile Include="..\src\Status.cpp" />
     <ClCompile Include="..\src\StreamPlayer.cpp" />
@@ -152,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\Decoder.h" />
     <ClInclude Include="..\include\NetModule.h" />
+    <ClInclude Include="..\include\PacketQueue.h" />
     <ClInclude Include="..\include\ReadBuffer.h" />
     <ClInclude Include="..\include\Status.h" />
     <ClInclude Include="..\include\StreamPlayer.h" />

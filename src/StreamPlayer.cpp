@@ -3,7 +3,7 @@
 
 
 StreamPlayer::StreamPlayer(const char* file_name)
-	: _netModule(file_name, &_playerStaus),
+	: _netModule(file_name, &_playerStaus, &_packetQueue),
 	_decoder(&_playerStaus)
 {
 }

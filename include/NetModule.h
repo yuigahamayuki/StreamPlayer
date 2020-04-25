@@ -16,13 +16,13 @@
 #include "ReadBuffer.h"
 
 
-
 class Status;
+class PacketQueue;
 
 class NetModule
 {
 public:
-	NetModule(const char* fileName, Status* statusPtr);
+	NetModule(const char* fileName, Status* statusPtr, PacketQueue* packetQueuePtr);
 	~NetModule();
 	// 发送：请求某个视频文件		接收：对应于请求的视频文件的解码器的参数
 	void init(ReadBuffer& readBuffer);	
@@ -50,4 +50,5 @@ private:
 	Status* _statusPtr;
 	// 已处理好的packet sequence number的最大值，用于客户端发送的ack丢掉，服务器重发了客户端已经处理过的packet，发来的packet的sequence number如果小于等于该值，直接跳过，客户端再发个ack
 	int _maxFinishedPacketNumber = -1;
+	PacketQueue* _packetQueuePtr;
 };
