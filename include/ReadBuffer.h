@@ -13,10 +13,16 @@ class ReadBuffer
 public:
 	ReadBuffer();
 
-	size_t sizeAlreadyRead() { return read_pos - start_pos; }
-	size_t sizeReadable() { return buffer_length - sizeAlreadyRead(); }
+	ReadBuffer(const ReadBuffer&) = delete;
+	//ReadBuffer& operator=(const ReadBuffer&) = delete;
+
+	static size_t sizeLength() { return buffer_length; }
+	size_t sizeAlreadyRead() const { return read_pos - start_pos; }
+	size_t sizeReadable() const { return buffer_length - sizeAlreadyRead(); }
 
 	char* buf() { return _buffer; }
+
+	void resetReadPos() { read_pos = _buffer; }
 
 	uint8_t readUInt8()
 	{
@@ -132,7 +138,7 @@ public:
 	void readChunk(void *dst, size_t size);		// 读连续内存到dst
 
 private:
-	static const size_t buffer_length = 1024;	// FIXME: 可能更改
+	static const size_t buffer_length = 1400;	// FIXME: 可能更改
 	char _buffer[buffer_length];
 	const char* start_pos;
 	char* read_pos;

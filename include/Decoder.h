@@ -9,13 +9,16 @@ extern "C"
 
 #include <ReadBuffer.h>
 
+class Status;
+
 class Decoder
 {
 public:
-	Decoder();
+	Decoder(Status* statusPtr);
 	~Decoder();
 
 	void initPara(ReadBuffer& readBuffer);		// 初始化解码器参数
 private:
 	AVCodecContext* _codecContext;
+	Status* _statusPtr;
 };

@@ -5,8 +5,8 @@ extern "C"
 #include <libavutil/avutil.h>
 };
 
-Decoder::Decoder()
-	: _codecContext(nullptr)
+Decoder::Decoder(Status* statusPtr)
+	: _codecContext(nullptr), _statusPtr(statusPtr)
 {
 	
 }

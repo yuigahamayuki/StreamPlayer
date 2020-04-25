@@ -11,22 +11,43 @@
 
 #include <WinSock2.h>
 
+#include <map>
+
 #include "ReadBuffer.h"
+
+
+
+class Status;
 
 class NetModule
 {
 public:
-	NetModule(const char* fileName);
+	NetModule(const char* fileName, Status* statusPtr);
 	~NetModule();
-	void init(ReadBuffer& readBuffer);	// 发送：请求某个视频文件		接收：对应于请求的视频文件的解码器的参数
-	void loop();	// 根据状态，发送暂缓消息，还是持续接收AVPacket
+	// 发送：请求某个视频文件		接收：对应于请求的视频文件的解码器的参数
+	void init(ReadBuffer& readBuffer);	
+	// 根据状态，发送暂缓消息，还是持续接收AVPacket
+	void loop();	
 private:
-	void sendBreakMessage();	// 发送给服务器，让服务器暂缓发送包
-	void sendMediaFileRequest();	// 请求某个特定视频文件
-	void receiveAVPacket();		// 接收AVPacket数据，构造AVPacket，并放到queue上
-	void receiveDecoderParameters();	// 接收解码器的参数
+	// 发送给服务器，让服务器暂缓发送包；然后更新状态   命令'w'
+	void sendBreakMessageAndSetStatus();	
+	// 让服务器重发AVPacket， 命令'r'
+	void reSendPacketRequest();
+	// 报告服务器成功发送packet  命令'a'
+	void sendACK();
+	// 请求某个特定视频文件
+	//void sendMediaFileRequest();	
+	// 接收AVPacket数据，构造AVPacket，并放到queue上
+	bool receiveAVPacket();	
+	// 接收解码器的参数
+	//void receiveDecoderParameters();	
+	// 把buffer接收到的packet数据构造出AVPacket，并放到queue上
+	void consturctPacketAndPutOnQueue(std::map<uint16_t, ReadBuffer>& bufferMap);
 
 	const char* _fileName;
 	sockaddr_in _serverSockAddr;
 	SOCKET _sockfd;
+	Status* _statusPtr;
+	// 已处理好的packet sequence number的最大值，用于客户端发送的ack丢掉，服务器重发了客户端已经处理过的packet，发来的packet的sequence number如果小于等于该值，直接跳过，客户端再发个ack
+	int _maxFinishedPacketNumber = -1;
 };
