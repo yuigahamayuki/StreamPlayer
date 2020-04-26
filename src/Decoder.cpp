@@ -119,7 +119,8 @@ int Decoder::decode()
 		}
 	}
 
-	av_packet_unref(packet);
+	//av_packet_unref(packet);
+	av_packet_free(&packet);
 
 	AVFrame* frame_raw = av_frame_alloc();
 	ret = avcodec_receive_frame(_codecContext, frame_raw);
@@ -152,7 +153,6 @@ int Decoder::decode()
 	//av_frame_free(&frame_render);
 
 	_frameQueuePtr->put(frame_render);
-
 	return 1;
 }
 

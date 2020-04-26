@@ -13,14 +13,16 @@ class ReadBuffer
 public:
 	ReadBuffer();
 
-	ReadBuffer(const ReadBuffer&) = delete;
-	ReadBuffer& operator=(const ReadBuffer&) = delete;
+	//ReadBuffer(const ReadBuffer&) = delete;
+	//ReadBuffer& operator=(const ReadBuffer&) = delete;
+	ReadBuffer& operator=(const ReadBuffer& rhs);
 
 	static size_t sizeLength() { return buffer_length; }
 	size_t sizeAlreadyRead() const { return read_pos - start_pos; }
 	size_t sizeReadable() const { return buffer_length - sizeAlreadyRead(); }
 
 	char* buf() { return _buffer; }
+	const char* buf() const { return _buffer; }
 
 	void resetReadPos() { read_pos = _buffer; }
 

@@ -8,6 +8,12 @@ ReadBuffer::ReadBuffer()
 	memset(_buffer, 0, sizeof(_buffer));
 }
 
+ReadBuffer & ReadBuffer::operator=(const ReadBuffer & rhs)
+{
+	memcpy(_buffer, rhs.buf(), buffer_length);
+	return *this;
+}
+
 void ReadBuffer::readChunk(void * dst, size_t size)
 {
 	if (sizeReadable() >= size)

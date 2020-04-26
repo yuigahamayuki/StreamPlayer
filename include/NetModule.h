@@ -44,7 +44,7 @@ private:
 	// 接收解码器的参数
 	//void receiveDecoderParameters();	
 	// 把buffer接收到的packet数据构造出AVPacket，并放到queue上
-	void consturctPacketAndPutOnQueue(std::map<uint16_t, ReadBuffer*>& bufferMap);
+	void consturctPacketAndPutOnQueue(std::map<uint16_t, ReadBuffer>& bufferMap);
 
 	const char* _fileName;
 	sockaddr_in _serverSockAddr;
