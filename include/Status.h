@@ -15,6 +15,7 @@ public:
 		PLAYER_STATUS_LOOP,			// 不断请求服务器发送AVPacket
 		PLAYER_STATUS_WAIT,			// 有太多Packet未处理，但未给服务器发暂缓处理请求
 		PLAYER_STATUS_WAIT_SENT,	// 有太多Packet未处理，已给服务器发暂缓处理请求
+		PLAYER_STATUS_REQUESET_SEND,	// 当处于PLAYER_STATUS_WAIT_SENT状态且渲染缓存的frame剩余的不多，重新请求服务器发送packet
 	} eStatus;
 
 	void setStatus(eStatus status) 

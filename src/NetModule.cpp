@@ -50,14 +50,23 @@ void NetModule::loop()
 	{
 		if (_statusPtr->getStatus() == Status::PLAYER_STATUS_WAIT)			// 请求服务器暂缓发送包
 		{
+			av_log(nullptr, AV_LOG_INFO, "send wait message.\n");
 			sendBreakMessageAndSetStatus();
+			_statusPtr->setStatus(Status::PLAYER_STATUS_WAIT_SENT);
 		}
 
 		if (_statusPtr->getStatus() == Status::PLAYER_STATUS_WAIT_SENT)		// 已请求服务器暂缓发送
 		{
-			const int sleep_time = 1.5 * 1000;	// FIXME: 睡眠时间，毫秒为单位，可能要改
+			const int sleep_time = 1000;	// FIXME: 睡眠时间，毫秒为单位，可能要改
 			Sleep(sleep_time);
 			continue;
+		}
+
+		if (_statusPtr->getStatus() == Status::PLAYER_STATUS_REQUESET_SEND)
+		{
+			av_log(nullptr, AV_LOG_INFO, "send restart message.\n");
+			sendRestartRequest();
+			_statusPtr->setStatus(Status::PLAYER_STATUS_LOOP);
 		}
 
 		if (_statusPtr->getStatus() == Status::PLAYER_STATUS_LOOP)		// 接收AVPacket数据，收到后构造AVPacket，放到queue上
@@ -78,11 +87,6 @@ void NetModule::sendBreakMessageAndSetStatus()
 	char msg = 'w';
 
 	int write_size = sendto(_sockfd, &msg, sizeof(msg), 0, (const sockaddr*)&_serverSockAddr, sizeof(_serverSockAddr));
-
-	if (_statusPtr->getStatus() == Status::PLAYER_STATUS_WAIT)
-	{
-		_statusPtr->setStatus(Status::PLAYER_STATUS_WAIT_SENT);
-	}
 	
 }
 
@@ -96,6 +100,13 @@ void NetModule::reSendPacketRequest()
 void NetModule::sendACK()
 {
 	char msg = 'a';
+
+	int write_size = sendto(_sockfd, &msg, sizeof(msg), 0, (const sockaddr*)&_serverSockAddr, sizeof(_serverSockAddr));
+}
+
+void NetModule::sendRestartRequest()
+{
+	char msg = 's';
 
 	int write_size = sendto(_sockfd, &msg, sizeof(msg), 0, (const sockaddr*)&_serverSockAddr, sizeof(_serverSockAddr));
 }

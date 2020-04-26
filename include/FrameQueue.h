@@ -26,6 +26,8 @@ public:
 
 	// 这个函数未必需要加锁，因为如果缓存的Frame很多，需要给服务器发送暂停命令时，只可能有Decoder线程往queue里塞Frame，只会导致更多的frame
 	bool needSendWait();
+	// 渲染器缓存的待渲染的图片不够多了，则请求服务器继续发
+	bool needSendMore();
 
 private:
 	std::deque<AVFrame*> _queue;

@@ -15,7 +15,7 @@ Renderer::Renderer(Status* playerStatusPtr, VideoStatus* videoStatusPtr, FrameQu
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER))
 	{
-		//av_log(nullptr, AV_LOG_ERROR, "Init SDL failure.\n");
+		av_log(nullptr, AV_LOG_ERROR, "Init SDL failure.\n");
 		exit(1);
 	}
 
@@ -69,7 +69,14 @@ void Renderer::loop()
 			
 			if (_frameQueuePtr->needSendWait())
 			{
-				_playerStatusPtr->setStatus(Status::PLAYER_STATUS_WAIT);
+				if (_playerStatusPtr->getStatus() == Status::PLAYER_STATUS_LOOP)
+					_playerStatusPtr->setStatus(Status::PLAYER_STATUS_WAIT);
+			}
+
+			if (_frameQueuePtr->needSendMore())
+			{
+				if (_playerStatusPtr->getStatus() == Status::PLAYER_STATUS_WAIT_SENT)
+					_playerStatusPtr->setStatus(Status::PLAYER_STATUS_REQUESET_SEND);
 			}
 
 			renderOneFrame();

@@ -37,5 +37,11 @@ bool FrameQueue::needSendWait()
 	// 24fps, 缓冲5秒，即超过120张frame时，给服务器发暂缓命令
 	size_t threadSholdSize = 120;		// FIXME: 这个值可能要改
 
-	return _queue.size() >= 120;
+	return _queue.size() >= threadSholdSize;
+}
+
+bool FrameQueue::needSendMore()
+{
+	size_t threadSholdSize = 20;		// FIXME: 这个值可能要改
+	return _queue.size() <= threadSholdSize;
 }

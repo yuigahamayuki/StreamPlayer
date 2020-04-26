@@ -31,10 +31,12 @@ public:
 private:
 	// 发送给服务器，让服务器暂缓发送包；然后更新状态   命令'w'
 	void sendBreakMessageAndSetStatus();	
-	// 让服务器重发AVPacket， 命令'r'
+	// 出现丢包，让服务器重发AVPacket， 命令'r'
 	void reSendPacketRequest();
 	// 报告服务器成功发送packet  命令'a'
 	void sendACK();
+	// 让服务器重新不断发送packet 命令's'，注意与'r'区别
+	void sendRestartRequest();
 	// 请求某个特定视频文件
 	//void sendMediaFileRequest();	
 	// 接收AVPacket数据，构造AVPacket，并放到queue上
