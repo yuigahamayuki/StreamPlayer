@@ -102,13 +102,19 @@ void NetModule::sendACK()
 
 bool NetModule::receiveAVPacket()
 {
-	ReadBuffer readBuffer;
+	std::map<uint16_t, ReadBuffer> bufferMap;		// key: fragNum （分片序号）
+	bufferMap.clear();
+	//ReadBuffer readBuffer;
 	// 收第1个，这个似乎不用设置超时，因为服务器一段时间没收到客户端的ack会重发，客户端总能收到
-	int read_size = recvfrom(_sockfd, readBuffer.buf(), readBuffer.sizeReadable(), 0, NULL, NULL);		// FIXME: 考虑非阻塞设置超时，select
+	int read_size = recvfrom(_sockfd, bufferMap[0].buf(), bufferMap[0].sizeReadable(), 0, NULL, NULL);		// FIXME: 考虑非阻塞设置超时，select
 
-	int32_t packetSequenceNumber = readBuffer.readUInt32();	// 包的sequence number
-	uint16_t totalFragCnt = readBuffer.readUInt16();			// 分片数量
-	uint16_t fragNum = readBuffer.readUInt16();
+	//int32_t packetSequenceNumber = readBuffer.readUInt32();	// 包的sequence number
+	//uint16_t totalFragCnt = readBuffer.readUInt16();			// 分片数量
+	//uint16_t fragNum = readBuffer.readUInt16();
+
+	int32_t packetSequenceNumber = bufferMap[0].readUInt32();	// 包的sequence number
+	uint16_t totalFragCnt = bufferMap[0].readUInt16();			// 分片数量
+	uint16_t fragNum = bufferMap[0].readUInt16();
 
 	if (packetSequenceNumber <= _maxFinishedPacketNumber)
 		return true;
@@ -139,8 +145,8 @@ bool NetModule::receiveAVPacket()
 	*/
 
 	// 分片的情况，while 循环接收剩余的packet，如果最后个数没达到总分片数，给服务器发送重发命令，否则发送ack
-	std::map<uint16_t, ReadBuffer> bufferMap;		// key: fragNum （分片序号）
-	bufferMap[fragNum] = readBuffer;
+	//std::map<uint16_t, ReadBuffer> bufferMap;		// key: fragNum （分片序号）
+	//bufferMap[fragNum] = readBuffer;
 
 	timeval tv;
 	tv.tv_sec = 0, tv.tv_usec = 100;		// FIXME: 超时值可能要改
@@ -158,9 +164,10 @@ bool NetModule::receiveAVPacket()
 
 		if (FD_ISSET(_sockfd, &readFDSet))
 		{
-			ReadBuffer readBuffer_1;
-			int read_size = recvfrom(_sockfd, readBuffer_1.buf(), readBuffer_1.sizeReadable(), 0, NULL, NULL);
-			bufferMap[i] = std::move(readBuffer_1);
+			//ReadBuffer readBuffer_1;
+			int read_size = recvfrom(_sockfd, bufferMap[i].buf(), bufferMap[i].sizeReadable(), 0, NULL, NULL);
+			//bufferMap[i] = std::move(readBuffer_1);
+			//bufferMap[i] = readBuffer_1;
 		}
 		else		// 过了超时时间sockfd也没有读事件发生，说明出现问题
 		{
@@ -232,10 +239,15 @@ void NetModule::consturctPacketAndPutOnQueue(std::map<uint16_t, ReadBuffer>& buf
 		bytesNeedToWrite -= remainingSizeFor1stBuf;
 	}
 
-	int i = 1;		// 读第几个buffer（分片） 
+	uint16_t i = 1;		// 读第几个buffer（分片） 
 	while (bytesNeedToWrite > 0)
 	{
 		size_t bytesWrittenToThisFrag = bytesNeedToWrite > remainingSizeForOtherBuf ? remainingSizeForOtherBuf : bytesNeedToWrite;	// 该分片要写入的字节数
+
+		auto x = bufferMap[i].readUInt32();
+		auto y = bufferMap[i].readUInt16();
+		auto z = bufferMap[i].readUInt16();
+
 
 		bufferMap[i].readChunk(ptr, bytesWrittenToThisFrag);
 

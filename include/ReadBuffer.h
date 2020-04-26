@@ -14,7 +14,7 @@ public:
 	ReadBuffer();
 
 	ReadBuffer(const ReadBuffer&) = delete;
-	//ReadBuffer& operator=(const ReadBuffer&) = delete;
+	ReadBuffer& operator=(const ReadBuffer&) = delete;
 
 	static size_t sizeLength() { return buffer_length; }
 	size_t sizeAlreadyRead() const { return read_pos - start_pos; }

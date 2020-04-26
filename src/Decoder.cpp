@@ -125,21 +125,24 @@ int Decoder::decode()
 	ret = avcodec_receive_frame(_codecContext, frame_raw);
 	if (ret != 0)
 	{
+		av_frame_free(&frame_raw);
+		
 		if (ret == AVERROR(EAGAIN))		// 需要再送若干packet给解码器，即call send_packet，需要free掉先前分配的内存
 		{
-			av_frame_free(&frame_raw);
+			
 			return -1;
 		}
 		else if (ret == AVERROR_EOF)
 		{
-			int cc;
+			return 0;
 		}
 		else
 		{
 			char buf[64] = { 0 };
 			av_strerror(ret, buf, sizeof(buf));
 			av_log(nullptr, AV_LOG_ERROR, "%s\n", buf);
-			exit(1);
+
+			return -2;
 		}
 	}
 
