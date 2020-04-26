@@ -66,11 +66,11 @@ void Renderer::loop()
 		// ²¥·Å×´Ì¬
 		if (_videoStatusPtr->getStatus() == VideoStatus::PLAYER_STATUS_PLAY)
 		{
-			/*
+			
 			if (_frameQueuePtr->needSendWait())
 			{
 				_playerStatusPtr->setStatus(Status::PLAYER_STATUS_WAIT);
-			}*/
+			}
 
 			renderOneFrame();
 
