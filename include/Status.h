@@ -9,13 +9,12 @@
 class Status
 {
 public:
-	typedef enum 
+	typedef enum	// 这里列出的状态是与网络模块有关的
 	{
 		PLAYER_STATUS_INIT = 0,		// 解码器参数未设置前处于此状态
 		PLAYER_STATUS_LOOP,			// 不断请求服务器发送AVPacket
 		PLAYER_STATUS_WAIT,			// 有太多Packet未处理，但未给服务器发暂缓处理请求
 		PLAYER_STATUS_WAIT_SENT,	// 有太多Packet未处理，已给服务器发暂缓处理请求
-		PLAYER_STATUS_PAUSE,		// 用户暂停视频播放，即渲染器不update
 	} eStatus;
 
 	void setStatus(eStatus status) 

@@ -106,7 +106,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>avcodec.lib;avutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec.lib;avutil.lib;swscale.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,20 +143,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Decoder.cpp" />
+    <ClCompile Include="..\src\FrameQueue.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\NetModule.cpp" />
     <ClCompile Include="..\src\PacketQueue.cpp" />
     <ClCompile Include="..\src\ReadBuffer.cpp" />
+    <ClCompile Include="..\src\Renderer.cpp" />
     <ClCompile Include="..\src\Status.cpp" />
     <ClCompile Include="..\src\StreamPlayer.cpp" />
+    <ClCompile Include="..\src\VideoStatus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Decoder.h" />
+    <ClInclude Include="..\include\FrameQueue.h" />
     <ClInclude Include="..\include\NetModule.h" />
     <ClInclude Include="..\include\PacketQueue.h" />
     <ClInclude Include="..\include\ReadBuffer.h" />
+    <ClInclude Include="..\include\Renderer.h" />
     <ClInclude Include="..\include\Status.h" />
     <ClInclude Include="..\include\StreamPlayer.h" />
+    <ClInclude Include="..\include\VideoStatus.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

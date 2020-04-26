@@ -13,4 +13,6 @@ int main(int argc, char** argv)
 
 	StreamPlayer player(argv[1]);
 	player.start();
+
+	return 0;
 }

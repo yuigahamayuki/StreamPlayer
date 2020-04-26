@@ -30,5 +30,7 @@ AVPacket * PacketQueue::take()
 
 	packet = _queue.front();
 	_queue.pop();
+	if (_queue.empty())
+		_empty = true;
 	return packet;
 }
