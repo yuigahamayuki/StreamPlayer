@@ -92,11 +92,16 @@ void NetModule::sendBreakMessageAndSetStatus()
 	
 }
 
-void NetModule::reSendPacketRequest()
+void NetModule::reSendPacketRequest(uint16_t fragNo)
 {
-	char msg = 'r';
+	char msg[3] = { 0, 0, 0 };
+	msg[0] = 'r';
+	char* ptr = msg;
+	ptr++;
+	uint16_t *addr = reinterpret_cast<uint16_t*>(ptr);
+	*addr = fragNo;
 
-	int write_size = sendto(_sockfd, &msg, sizeof(msg), 0, (const sockaddr*)&_serverSockAddr, sizeof(_serverSockAddr));
+	int write_size = sendto(_sockfd, msg, sizeof(msg), 0, (const sockaddr*)&_serverSockAddr, sizeof(_serverSockAddr));
 }
 
 void NetModule::sendACK()
@@ -142,47 +147,47 @@ bool NetModule::receiveAVPacket()
 	while (bufferMap.size() != totalFragCnt)
 	{
 		// 先尝试接
-		for (auto i = 1; i < lostFragNumSet.size(); ++i)
+		auto lostPacketSize = lostFragNumSet.size();
+		for (auto i = 0; i < lostPacketSize; ++i)
 		{
 			timeval tv;
 			tv.tv_sec = 0, tv.tv_usec = 100;		// FIXME: 超时值可能要改
 			fd_set readFDSet;
 			FD_ZERO(&readFDSet);
+			FD_SET(_sockfd, &readFDSet);
+			int ret = select(_sockfd + 1, &readFDSet, nullptr, nullptr, &tv);
 
+			if (ret < 0)
+			{
+				av_log(nullptr, AV_LOG_ERROR, "select error.\n");
+			}
+
+			if (FD_ISSET(_sockfd, &readFDSet))		// 收到1个分片	
+			{
+				ReadBuffer readBuffer_1;
+				int read_size = recvfrom(_sockfd, readBuffer_1.buf(), readBuffer_1.sizeReadable(), 0, NULL, NULL);
+
+				auto packetNo = readBuffer_1.readUInt32();
+				auto fragCnt = readBuffer_1.readUInt16();
+				auto fragNo = readBuffer_1.readUInt16();
+
+				bufferMap[fragNo] = readBuffer_1;		// 放入map
+				lostFragNumSet.erase(fragNo);			// 从set中去除
+			}
+			else		// 过了超时时间不处理
+			{
+				
+			}
 		}
 
+		// 给服务器发需要重传的分节的1个个包
+		for (auto it = lostFragNumSet.cbegin(); it != lostFragNumSet.cend(); ++it)
+		{
+			auto fragNo = *it;
+			reSendPacketRequest(fragNo);
+		}
 	}
 
-	timeval tv;
-	tv.tv_sec = 0, tv.tv_usec = 100;		// FIXME: 超时值可能要改
-	fd_set readFDSet;
-	FD_ZERO(&readFDSet);
-	for (auto i = 1; i < totalFragCnt; ++i)
-	{
-		FD_SET(_sockfd, &readFDSet);
-		int ret = select(_sockfd + 1, &readFDSet, nullptr, nullptr, &tv);
-
-		if (ret < 0)
-		{
-			av_log(nullptr, AV_LOG_ERROR, "select error.\n");
-		}
-
-		if (FD_ISSET(_sockfd, &readFDSet))
-		{
-			ReadBuffer readBuffer_1;
-			int read_size = recvfrom(_sockfd, readBuffer_1.buf(), readBuffer_1.sizeReadable(), 0, NULL, NULL);
-
-			auto packetNo = readBuffer_1.readUInt32();
-			auto fragCnt = readBuffer_1.readUInt16();
-			auto fragNo = readBuffer_1.readUInt16();
-
-			bufferMap[fragNo] = readBuffer_1;
-		}
-		else		// 过了超时时间sockfd也没有读事件发生，说明出现问题
-		{
-			//return false;
-		}
-	}
 
 	consturctPacketAndPutOnQueue(bufferMap);
 

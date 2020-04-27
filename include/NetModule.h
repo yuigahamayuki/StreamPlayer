@@ -32,7 +32,7 @@ private:
 	// 发送给服务器，让服务器暂缓发送包；然后更新状态   命令'w'
 	void sendBreakMessageAndSetStatus();	
 	// 出现丢包，让服务器重发AVPacket， 命令'r'
-	void reSendPacketRequest();
+	void reSendPacketRequest(uint16_t fragNo);
 	// 报告服务器成功发送packet  命令'a'
 	void sendACK();
 	// 让服务器重新不断发送packet 命令's'，注意与'r'区别
