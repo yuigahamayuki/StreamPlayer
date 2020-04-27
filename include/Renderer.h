@@ -26,7 +26,7 @@ public:
 	void loop();
 
 private:
-	void renderOneFrame();
+	bool renderOneFrame();
 
 	SDL_Window*         _window;
 	SDL_Renderer*       _sdl_renderer;

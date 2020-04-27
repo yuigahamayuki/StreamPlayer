@@ -119,6 +119,9 @@ int Decoder::decode()
 
 	AVPacket* packet = _packetQueuePtr->take();
 
+	if (packet == nullptr)
+		return -3;
+
 	int ret = avcodec_send_packet(_codecContext, packet);
 	if (ret != 0)
 	{

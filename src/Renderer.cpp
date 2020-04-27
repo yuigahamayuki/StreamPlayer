@@ -79,16 +79,23 @@ void Renderer::loop()
 					_playerStatusPtr->setStatus(Status::PLAYER_STATUS_REQUESET_SEND);
 			}
 
-			renderOneFrame();
+			
+			if (renderOneFrame())
+			{
+				SDL_Delay(40);
+			}
 
-			SDL_Delay(40);
+			
 		}
 	}
 }
 
-void Renderer::renderOneFrame()
+bool Renderer::renderOneFrame()
 {
 	AVFrame* frame_render = _frameQueuePtr->take();
+
+	if (frame_render == nullptr)
+		return false;
 
 	SDL_UpdateTexture(_sdl_texture,
 		&_sdl_rect,
@@ -100,5 +107,6 @@ void Renderer::renderOneFrame()
 	SDL_RenderCopy(_sdl_renderer, _sdl_texture, &_sdl_rect, &_sdl_rect);
 	SDL_RenderPresent(_sdl_renderer);
 
+	return true;
 	//av_frame_free(&frame_render);
 }

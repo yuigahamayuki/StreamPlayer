@@ -17,7 +17,6 @@ void FrameQueue::put(AVFrame * frame)
 	_queue.push_back(frame);
 	if (!_queue.empty())
 		_empty = false;
-	_cond.notify_all();
 }
 
 AVFrame * FrameQueue::take()
@@ -25,11 +24,12 @@ AVFrame * FrameQueue::take()
 	AVFrame* frame = nullptr;
 
 	std::unique_lock<std::mutex> lck(_mutex);
-	while (_empty)
-		_cond.wait(lck);
-
-	frame = _queue.front();
-	_queue.pop_front();
+	if (!_queue.empty())
+	{
+		frame = _queue.front();
+		_queue.pop_front();
+	}
+	
 	if (_queue.empty())
 		_empty = true;
 	_cond.notify_all();

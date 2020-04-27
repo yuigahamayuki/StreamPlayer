@@ -21,7 +21,6 @@ void PacketQueue::put(AVPacket * packet)
 	_queue.push(packet);
 	if (!_queue.empty())
 		_empty = false;
-	_cond.notify_all();
 }
 
 AVPacket * PacketQueue::take()
@@ -29,13 +28,16 @@ AVPacket * PacketQueue::take()
 	AVPacket* packet = nullptr;
 
 	std::unique_lock<std::mutex> lck(_mutex);
-	while (_empty)
-		_cond.wait(lck);
+	if (!_queue.empty())
+	{
+		packet = _queue.front();
+		_queue.pop();
+	}
 
-	packet = _queue.front();
-	_queue.pop();
 	if (_queue.empty())
 		_empty = true;
+
 	_cond.notify_all();
+
 	return packet;
 }

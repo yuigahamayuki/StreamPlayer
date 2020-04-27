@@ -121,6 +121,17 @@ void NetModule::sendRestartRequest()
 bool NetModule::receiveAVPacket()
 {
 	ReadBuffer readBuffer;
+
+	timeval tv_1;
+	tv_1.tv_sec = 0, tv_1.tv_usec = 100;		// FIXME: 超时值可能要改
+	fd_set readFDSet_1;
+	FD_ZERO(&readFDSet_1);
+	FD_SET(_sockfd, &readFDSet_1);
+	int ret_1 = select(_sockfd + 1, &readFDSet_1, nullptr, nullptr, &tv_1);
+	if (!FD_ISSET(_sockfd, &readFDSet_1))
+	{
+		return false;
+	}
 	// 收第1个，这个似乎不用设置超时，1个包都收不到，说明丢包率100%
 	int read_size = recvfrom(_sockfd, readBuffer.buf(), readBuffer.sizeReadable(), 0, NULL, NULL);		// FIXME: 考虑非阻塞设置超时，select
 
