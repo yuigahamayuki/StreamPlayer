@@ -71,12 +71,6 @@ void Renderer::loop()
 			{
 				if (_playerStatusPtr->getStatus() == Status::PLAYER_STATUS_LOOP)
 					_playerStatusPtr->setStatus(Status::PLAYER_STATUS_WAIT);
-
-				int *p = new int(1);
-				_CrtDumpMemoryLeaks();
-
-				int a = 1;
-				a++;
 			}
 
 			if (_frameQueuePtr->needSendMore())
