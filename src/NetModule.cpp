@@ -6,7 +6,7 @@ extern "C"
 };
 
 #include <map>
-
+#include <set>
 
 #include "Status.h"
 #include "PacketQueue.h"
@@ -71,11 +71,13 @@ void NetModule::loop()
 
 		if (_statusPtr->getStatus() == Status::PLAYER_STATUS_LOOP)		// 接收AVPacket数据，收到后构造AVPacket，放到queue上
 		{
-
+			/*
 			while (!receiveAVPacket())		// 失败则请求服务器重发
 			{
 				reSendPacketRequest();
-			}
+			}*/
+
+			receiveAVPacket();
 
 			
 		}
@@ -114,44 +116,42 @@ void NetModule::sendRestartRequest()
 bool NetModule::receiveAVPacket()
 {
 	ReadBuffer readBuffer;
-	// 收第1个，这个似乎不用设置超时，因为服务器一段时间没收到客户端的ack会重发，客户端总能收到
+	// 收第1个，这个似乎不用设置超时，1个包都收不到，说明丢包率100%
 	int read_size = recvfrom(_sockfd, readBuffer.buf(), readBuffer.sizeReadable(), 0, NULL, NULL);		// FIXME: 考虑非阻塞设置超时，select
 
 	int32_t packetSequenceNumber = readBuffer.readUInt32();	// 包的sequence number
 	uint16_t totalFragCnt = readBuffer.readUInt16();			// 分片数量
-	uint16_t fragNum = readBuffer.readUInt16();
+	uint16_t fragNum = readBuffer.readUInt16();				// 收到的分片号
 
 	if (packetSequenceNumber <= _maxFinishedPacketNumber)
 		return true;
 
-	/*
-	if (totalFragCnt == 1)	// 只有一个分片
+	// 执行到这，说明收到了下1个packet的1个分片，在收齐这个packet的所有数据前，都会在这个函数内部，无法退出这个函数
+
+	std::set<uint16_t> lostFragNumSet;		// 这个set存未收到的包的分片号，这个set的size加上map的size正好是totalFragCnt
+	for (auto x = 0; x < totalFragCnt; ++x)
 	{
-		AVPacket* packet = av_packet_alloc();
-		packet->stream_index = readBuffer.readUInt8();
-		packet->pos = readBuffer.readInt64();
-		packet->pts = readBuffer.readInt64();
-		packet->dts = readBuffer.readInt64();
-		packet->duration = readBuffer.readInt64();
-		packet->size = readBuffer.readInt32();
-
-		// TODO: 放到queue上
-
-		av_log(nullptr, AV_LOG_INFO, "\n~~~~~~~~~~~~~~~~~~~~~\n");
-		av_log(nullptr, AV_LOG_INFO, "packetSequenceNumber: %d\n", packetSequenceNumber);
-		av_log(nullptr, AV_LOG_INFO, "_maxFinishedPacketNumber: %d\n", _maxFinishedPacketNumber);
-		av_log(nullptr, AV_LOG_INFO, "packet size: %d\n", packet->size);
-		av_log(nullptr, AV_LOG_INFO, "~~~~~~~~~~~~~~~~~~~~~\n");
-		_maxFinishedPacketNumber = packetSequenceNumber;
-
-		sendACK();
-		return true;
+		if (x != fragNum)
+			lostFragNumSet.insert(x);
 	}
-	*/
 
 	// 分片的情况，while 循环接收剩余的packet，如果最后个数没达到总分片数，给服务器发送重发命令，否则发送ack
 	std::map<uint16_t, ReadBuffer> bufferMap;		// key: fragNum （分片序号）
 	bufferMap[fragNum] = readBuffer;
+
+	while (bufferMap.size() != totalFragCnt)
+	{
+		// 先尝试接
+		for (auto i = 1; i < lostFragNumSet.size(); ++i)
+		{
+			timeval tv;
+			tv.tv_sec = 0, tv.tv_usec = 100;		// FIXME: 超时值可能要改
+			fd_set readFDSet;
+			FD_ZERO(&readFDSet);
+
+		}
+
+	}
 
 	timeval tv;
 	tv.tv_sec = 0, tv.tv_usec = 100;		// FIXME: 超时值可能要改
@@ -180,19 +180,9 @@ bool NetModule::receiveAVPacket()
 		}
 		else		// 过了超时时间sockfd也没有读事件发生，说明出现问题
 		{
-			return false;
+			//return false;
 		}
 	}
-
-	if (bufferMap.size() < totalFragCnt)
-	{
-		av_log(nullptr, AV_LOG_INFO, "\n=====================\n");
-		av_log(nullptr, AV_LOG_INFO, "部分分片丢失\n");
-		av_log(nullptr, AV_LOG_INFO, "=====================\n");
-
-		return false;
-	}
-
 
 	consturctPacketAndPutOnQueue(bufferMap);
 

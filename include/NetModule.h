@@ -39,7 +39,7 @@ private:
 	void sendRestartRequest();
 	// 请求某个特定视频文件
 	//void sendMediaFileRequest();	
-	// 接收AVPacket数据，构造AVPacket，并放到queue上
+	// 接收AVPacket数据，构造AVPacket, 这个函数返回后一定是得到了1个完整的AVPacket的数据
 	bool receiveAVPacket();	
 	// 接收解码器的参数
 	//void receiveDecoderParameters();	
