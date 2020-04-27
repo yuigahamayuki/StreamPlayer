@@ -31,8 +31,8 @@ private:
 	*/
 	int decode();
 
-	// 图片格式转换，函数内会创建AVFrame
-	AVFrame* convertFrame(const AVFrame* frame_raw);
+	// 图片格式转换
+	void convertFrame();
 
 	AVCodecContext* _codecContext;	
 	SwsContext* _convertContext;		// 图片格式转换的context，主要用于scale
@@ -41,5 +41,10 @@ private:
 
 	PacketQueue* _packetQueuePtr;
 	FrameQueue* _frameQueuePtr;
+
+	// AVFrame不能多次调用av_frame_alloc，会造成严重的内存泄漏（av_frame_free似乎并不释放data空间)
+	AVFrame* _frameRaw;				// 解码器输出的frame
+	AVFrame* _frameRender;			// 上面的rawFrame经过图片格式、大小转换后的frame，是实际渲染器渲染的图片
+	uint8_t* _pictureBuffer;		// _frameRender数据使用的buffer
 
 };

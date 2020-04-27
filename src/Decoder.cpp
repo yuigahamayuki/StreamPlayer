@@ -14,13 +14,19 @@ Decoder::Decoder(VideoStatus* videoStatusPtr, PacketQueue* packetQueuePtr, Frame
 	: _codecContext(nullptr), _convertContext(nullptr),
 	_videoStatusPtr(videoStatusPtr),
 	_packetQueuePtr(packetQueuePtr),
-	_frameQueuePtr(frameQueuePtr)
+	_frameQueuePtr(frameQueuePtr),
+	_frameRaw(av_frame_alloc()),
+	_frameRender(av_frame_alloc()),
+	_pictureBuffer(nullptr)
 {
 	
 }
 
 Decoder::~Decoder()
 {
+	av_free(_pictureBuffer);
+	av_frame_free(&_frameRender);
+	av_frame_free(&_frameRaw);
 	avcodec_free_context(&_codecContext);
 }
 
@@ -79,6 +85,20 @@ void Decoder::initPara(ReadBuffer & readBuffer)
 
 	avcodec_parameters_free(&codecPara);
 
+	// 设置渲染帧的buffer
+	auto buf_size = av_image_get_buffer_size(AV_PIX_FMT_YUV420P,
+		_videoStatusPtr->getWidth(),
+		_videoStatusPtr->getHeight(),
+		1);
+
+	_pictureBuffer = (uint8_t *)av_malloc(buf_size);
+	av_image_fill_arrays(_frameRender->data,
+		_frameRender->linesize,
+		_pictureBuffer,
+		AV_PIX_FMT_YUV420P,
+		_videoStatusPtr->getWidth(),
+		_videoStatusPtr->getHeight(),
+		1);
 
 	// 初始化图片转换器
 	_convertContext = sws_getContext(
@@ -122,11 +142,12 @@ int Decoder::decode()
 	//av_packet_unref(packet);
 	av_packet_free(&packet);
 
-	AVFrame* frame_raw = av_frame_alloc();
-	ret = avcodec_receive_frame(_codecContext, frame_raw);
+	//AVFrame* frame_raw = av_frame_alloc();
+	//ret = avcodec_receive_frame(_codecContext, frame_raw);
+	ret = avcodec_receive_frame(_codecContext, _frameRaw);
 	if (ret != 0)
 	{
-		av_frame_free(&frame_raw);
+		//av_frame_free(&frame_raw);
 		
 		if (ret == AVERROR(EAGAIN))		// 需要再送若干packet给解码器，即call send_packet，需要free掉先前分配的内存
 		{
@@ -148,39 +169,23 @@ int Decoder::decode()
 	}
 
 	// 处理frame
-	AVFrame* frame_render = convertFrame(frame_raw);
-	av_frame_free(&frame_raw);
+	//AVFrame* frame_render = convertFrame(frame_raw);
+	convertFrame();
+	//av_frame_free(&frame_raw);
 	//av_frame_free(&frame_render);
 
-	_frameQueuePtr->put(frame_render);
+	_frameQueuePtr->put(_frameRender);
 	return 1;
 }
 
-AVFrame * Decoder::convertFrame(const AVFrame * frame_raw)
+void Decoder::convertFrame()
 {
-	AVFrame* frame_render = av_frame_alloc();
-
-	auto buf_size = av_image_get_buffer_size(AV_PIX_FMT_YUV420P,
-		_videoStatusPtr->getWidth(),
-		_videoStatusPtr->getHeight(),
-		1);
-
-	uint8_t* buffer = (uint8_t *)av_malloc(buf_size);
-	av_image_fill_arrays(frame_render->data,
-		frame_render->linesize,
-		buffer,
-		AV_PIX_FMT_YUV420P, 
-		_videoStatusPtr->getWidth(),
-		_videoStatusPtr->getHeight(),
-		1);
-
 	sws_scale(_convertContext,
-		(const uint8_t* const*)frame_raw->data,
-		frame_raw->linesize,
+		(const uint8_t* const*)_frameRaw->data,
+		_frameRaw->linesize,
 		0,
 		_codecContext->height,
-		frame_render->data,
-		frame_render->linesize);
+		_frameRender->data,
+		_frameRender->linesize);
 
-	return frame_render;
 }

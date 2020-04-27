@@ -100,5 +100,5 @@ void Renderer::renderOneFrame()
 	SDL_RenderCopy(_sdl_renderer, _sdl_texture, &_sdl_rect, &_sdl_rect);
 	SDL_RenderPresent(_sdl_renderer);
 
-	av_frame_free(&frame_render);
+	//av_frame_free(&frame_render);
 }
