@@ -24,6 +24,9 @@ class NetModule
 public:
 	NetModule(const char* fileName, Status* statusPtr, PacketQueue* packetQueuePtr);
 	~NetModule();
+
+	NetModule(const NetModule&) = delete;
+	NetModule& operator=(const NetModule&) = delete;
 	// 发送：请求某个视频文件		接收：对应于请求的视频文件的解码器的参数
 	void init(ReadBuffer& readBuffer);	
 	// 根据状态，发送暂缓消息，还是持续接收AVPacket

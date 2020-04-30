@@ -19,6 +19,10 @@ class StreamPlayer
 public:
 	StreamPlayer(const char* file_name);
 	~StreamPlayer();
+
+	StreamPlayer(const StreamPlayer&) = delete;
+	StreamPlayer& operator=(const StreamPlayer&) = delete;
+
 	void start();
 private:
 	// 网络状况（接收状态？暂停接收？etc）

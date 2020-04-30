@@ -10,6 +10,9 @@ class VideoStatus
 public:
 	VideoStatus();
 
+	VideoStatus(const VideoStatus&) = delete;
+	VideoStatus& operator=(const VideoStatus&) = delete;
+
 	typedef enum	// 这里列出的状态是与视频播放有关的
 	{
 		PLAYER_STATUS_PLAY= 0,

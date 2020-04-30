@@ -1,4 +1,4 @@
-#include "..\include\Decoder.h"
+#include "Decoder.h"
 
 extern "C"
 {

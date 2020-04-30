@@ -20,6 +20,9 @@ public:
 	Decoder(VideoStatus* videoStatusPtr, PacketQueue* packetQueuePtr, FrameQueue* frameQueuePtr);
 	~Decoder();
 
+	Decoder(const Decoder&) = delete;
+	Decoder& operator=(const Decoder&) = delete;
+
 	void loop();
 
 	// 初始化解码器参数，并设置图片转换context

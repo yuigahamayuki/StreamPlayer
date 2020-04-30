@@ -1,4 +1,4 @@
-#include "..\include\ReadBuffer.h"
+#include "ReadBuffer.h"
 
 #include "string.h"
 

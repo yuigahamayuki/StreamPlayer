@@ -1,4 +1,4 @@
-#include "..\include\StreamPlayer.h"
+#include "StreamPlayer.h"
 
 #include <thread>
 

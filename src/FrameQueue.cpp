@@ -1,4 +1,4 @@
-#include "..\include\FrameQueue.h"
+#include "FrameQueue.h"
 
 FrameQueue::FrameQueue()
 {

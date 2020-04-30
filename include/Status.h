@@ -9,6 +9,11 @@
 class Status
 {
 public:
+	Status()	{}
+
+	Status(const Status&) = delete;
+	Status& operator=(const Status&) = delete;
+
 	typedef enum	// 这里列出的状态是与网络模块有关的
 	{
 		PLAYER_STATUS_INIT = 0,		// 解码器参数未设置前处于此状态
